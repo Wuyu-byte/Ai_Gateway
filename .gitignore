@@ -1,0 +1,18 @@
+# 编译产物
+bin/
+*.exe
+*.test
+
+# IDE
+.idea/
+.vscode/
+
+# 系统
+.DS_Store
+
+# 环境变量
+.env
+.env.*
+
+# 日志
+*.log
