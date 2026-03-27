@@ -77,50 +77,50 @@ func Load() *Config {
 
 	return &Config{
 		App: AppConfig{
-			Port: getEnvAsInt("APP_PORT", 8080),
-			Env:  getEnv("APP_ENV", "dev"),
+			Port: getEnvAsInt("APP_PORT"),
+			Env:  getEnv("APP_ENV"),
 		},
 		MySQL: MySQLConfig{
-			Host:     getEnv("MYSQL_HOST", "127.0.0.1"),
-			Port:     getEnvAsInt("MYSQL_PORT", 3306),
-			User:     getEnv("MYSQL_USER", "root"),
-			Password: getEnv("MYSQL_PASSWORD", ""),
-			DBName:   getEnv("MYSQL_DBNAME", "ai_gateway"),
-			Charset:  getEnv("MYSQL_CHARSET", "utf8mb4"),
+			Host:     getEnv("MYSQL_HOST"),
+			Port:     getEnvAsInt("MYSQL_PORT"),
+			User:     getEnv("MYSQL_USER"),
+			Password: getEnv("MYSQL_PASSWORD"),
+			DBName:   getEnv("MYSQL_DBNAME"),
+			Charset:  getEnv("MYSQL_CHARSET"),
 		},
 		Redis: RedisConfig{
-			Addr:     getEnv("REDIS_ADDR", "127.0.0.1:6379"),
-			Password: getEnv("REDIS_PASSWORD", ""),
-			DB:       getEnvAsInt("REDIS_DB", 0),
+			Addr:     getEnv("REDIS_ADDR"),
+			Password: getEnv("REDIS_PASSWORD"),
+			DB:       getEnvAsInt("REDIS_DB"),
 		},
 		Auth: AuthConfig{
-			JWTSecret:        getEnv("JWT_SECRET", "change-me-in-production"),
-			JWTExpireMinutes: getEnvAsInt("JWT_EXPIRE_MINUTES", 30),
+			JWTSecret:        getEnv("JWT_SECRET"),
+			JWTExpireMinutes: getEnvAsInt("JWT_EXPIRE_MINUTES"),
 		},
 		RateLimit: RateLimitConfig{
-			PerMinute: getEnvAsInt("RATE_LIMIT_PER_MINUTE", 60),
+			PerMinute: getEnvAsInt("RATE_LIMIT_PER_MINUTE"),
 		},
 		Scheduler: SchedulerConfig{
-			HealthCheckIntervalSec: getEnvAsInt("SCHEDULER_HEALTHCHECK_INTERVAL_SEC", 10),
-			HealthCheckTimeoutSec:  getEnvAsInt("SCHEDULER_HEALTHCHECK_TIMEOUT_SEC", 5),
+			HealthCheckIntervalSec: getEnvAsInt("SCHEDULER_HEALTHCHECK_INTERVAL_SEC"),
+			HealthCheckTimeoutSec:  getEnvAsInt("SCHEDULER_HEALTHCHECK_TIMEOUT_SEC"),
 		},
 		Logging: LoggingConfig{
-			QueueSize:       getEnvAsInt("ASYNC_LOG_QUEUE_SIZE", 2048),
-			WorkerCount:     getEnvAsInt("ASYNC_LOG_WORKER_COUNT", 4),
-			BatchSize:       getEnvAsInt("ASYNC_LOG_BATCH_SIZE", 50),
-			FlushIntervalMS: getEnvAsInt("ASYNC_LOG_FLUSH_INTERVAL_MS", 1000),
+			QueueSize:       getEnvAsInt("ASYNC_LOG_QUEUE_SIZE"),
+			WorkerCount:     getEnvAsInt("ASYNC_LOG_WORKER_COUNT"),
+			BatchSize:       getEnvAsInt("ASYNC_LOG_BATCH_SIZE"),
+			FlushIntervalMS: getEnvAsInt("ASYNC_LOG_FLUSH_INTERVAL_MS"),
 		},
 		Providers: ProviderGroupConfig{
 			OpenAI: ProviderConfig{
-				BaseURL: getEnv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+				BaseURL: getEnv("OPENAI_BASE_URL"),
 				APIKeys: getEnvAsSlice("OPENAI_KEYS"),
 			},
 			DeepSeek: ProviderConfig{
-				BaseURL: getEnv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"),
+				BaseURL: getEnv("DEEPSEEK_BASE_URL"),
 				APIKeys: getEnvAsSlice("DEEPSEEK_KEYS"),
 			},
 			Claude: ProviderConfig{
-				BaseURL: getEnv("CLAUDE_BASE_URL", "https://api.anthropic.com/v1"),
+				BaseURL: getEnv("CLAUDE_BASE_URL"),
 				APIKeys: getEnvAsSlice("CLAUDE_KEYS"),
 			},
 		},
@@ -139,24 +139,24 @@ func (c MySQLConfig) DSN() string {
 	)
 }
 
-func getEnv(key, fallback string) string {
-	value := strings.TrimSpace(os.Getenv(key))
-	if value == "" {
-		return fallback
+func getEnv(key string) string {
+	raw, ok := os.LookupEnv(key)
+	if !ok {
+		panic(fmt.Sprintf("missing required env: %s", key))
 	}
 
-	return value
+	return strings.TrimSpace(raw)
 }
 
-func getEnvAsInt(key string, fallback int) int {
-	value := strings.TrimSpace(os.Getenv(key))
-	if value == "" {
-		return fallback
+func getEnvAsInt(key string) int {
+	raw, ok := os.LookupEnv(key)
+	if !ok {
+		panic(fmt.Sprintf("missing required env: %s", key))
 	}
 
-	number, err := strconv.Atoi(value)
+	number, err := strconv.Atoi(strings.TrimSpace(raw))
 	if err != nil {
-		return fallback
+		panic(fmt.Sprintf("invalid int env %s=%q", key, raw))
 	}
 
 	return number
